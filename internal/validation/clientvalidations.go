@@ -18,6 +18,10 @@ func ErrorsInName(client requests.Client, errorsList *[]string) {
 	if strings.TrimSpace(client.Name) == "" {
 		*errorsList = append(*errorsList, resourceserrorsmessages.NameIsNil)
 	}
+
+	if len(client.Name) > 50 {
+		*errorsList = append(*errorsList, resourceserrorsmessages.TheNameMustContainFiftyChar)
+	}
 }
 
 func ErrorsInPhoneNumber(client requests.Client, errorsList *[]string) {
@@ -39,7 +43,7 @@ func ErrorsInDateScheduling(client requests.Client, errorsList *[]string) {
 		*errorsList = append(*errorsList, resourceserrorsmessages.DateTimeIsInvalid)
 	}
 
-	if client.DateTime.Before(time.Now()) {
+	if client.DateTime.Before(time.Now().Add(-1)) {
 		*errorsList = append(*errorsList, resourceserrorsmessages.ChooseADateLaterThanToday)
 	}
 }
