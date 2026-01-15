@@ -3,33 +3,33 @@ package enums
 type TypeService int
 
 const (
-	brasileito TypeService = iota
-	fioAFio
-	efeitoDelineado
-	egipcio
-	fox
-	gatinho
-	tufo
-	russo
+	Brasileiro TypeService = iota
+	FioAFio
+	EfeitoDelineado
+	Egipcio
+	Fox
+	Gatinho
+	Tufo
+	Russo
 )
 
 func (ts TypeService) messages() string {
 	switch ts {
-	case brasileito:
+	case Brasileiro:
 		return "Brasileiro"
-	case fioAFio:
+	case FioAFio:
 		return "Fio a Fio"
-	case efeitoDelineado:
+	case EfeitoDelineado:
 		return "Efeito Delineado"
-	case egipcio:
+	case Egipcio:
 		return "Egípcio"
-	case fox:
+	case Fox:
 		return "Fox"
-	case gatinho:
+	case Gatinho:
 		return "Gatinho"
-	case tufo:
+	case Tufo:
 		return "Tufo"
-	case russo:
+	case Russo:
 		return "Russo"
 	default:
 		return ""

@@ -10,6 +10,6 @@ import (
 func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/toschedule", handler.CreateAppointments).Methods("POST")
-	r.HandleFunc("/", handler.ListAppointments).Methods("GET")
+	r.HandleFunc("/catchallappointments", handler.CatchAllAppointments).Methods("GET")
 	http.ListenAndServe(":9437", r)
 }
