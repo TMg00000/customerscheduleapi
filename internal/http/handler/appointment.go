@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -10,9 +11,10 @@ import (
 	"github.com/TMg00000/customerscheduleapi/internal/repository"
 	"github.com/TMg00000/customerscheduleapi/internal/validation"
 	"github.com/gorilla/mux"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func CreateAppointments(repo *repository.AppointmentsRepository) http.HandlerFunc {
+func CreateAppointments(repo *repository.AppointmentsRepository, counters *mongo.Collection) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var client requests.Client
 
@@ -30,6 +32,13 @@ func CreateAppointments(repo *repository.AppointmentsRepository) http.HandlerFun
 			return
 		}
 
+		nextId, err := repository.GetNextId(counters, context.Background())
+		if err != nil {
+			http.Error(w, resourceserrorsmessages.ErrorIdGenerate, http.StatusBadRequest)
+			return
+		}
+		client.Id = nextId
+
 		if err := repo.Create(client); err != nil {
 			http.Error(w, resourceserrorsmessages.ErrorAddInDataBase, http.StatusBadRequest)
 			return
@@ -45,12 +54,12 @@ func GetAllAppointments(repo *repository.AppointmentsRepository) http.HandlerFun
 	return func(w http.ResponseWriter, r *http.Request) {
 		clients, err := repo.GetAll()
 		if err != nil {
-			http.Error(w, resourceserrorsmessages.ErroQueryDataBase, http.StatusNotFound)
+			http.Error(w, resourceserrorsmessages.ErroQueryDataBase, http.StatusInternalServerError)
 			return
 		}
 
 		w.Header().Set("Content-type", "application/json")
-		w.WriteHeader(http.StatusCreated)
+		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(clients)
 	}
 }

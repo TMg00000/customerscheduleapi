@@ -7,22 +7,23 @@ import (
 	"github.com/TMg00000/customerscheduleapi/internal/domain/models/requests"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type AppointmentsRepository struct {
-	colletion *mongo.Collection
+	collection *mongo.Collection
 }
 
 func NewAppointmentsRepository(client *mongo.Client) *AppointmentsRepository {
-	colletion := client.Database("appointmentsdb").Collection("appointments")
-	return &AppointmentsRepository{colletion: colletion}
+	collection := client.Database("appointmentsdb").Collection("appointments")
+	return &AppointmentsRepository{collection: collection}
 }
 
 func (r *AppointmentsRepository) Create(c requests.Client) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	_, err := r.colletion.InsertOne(ctx, bson.M{
+	_, err := r.collection.InsertOne(ctx, bson.M{
 		"Name":        c.Name,
 		"PhoneNumber": c.PhoneNumber,
 		"TypeService": c.TypeService,
@@ -32,22 +33,16 @@ func (r *AppointmentsRepository) Create(c requests.Client) error {
 }
 
 func (r *AppointmentsRepository) GetAll() ([]requests.Client, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	cursor, err := r.colletion.Find(ctx, bson.M{})
+	ctx := context.Background()
+	cursor, err := r.collection.Find(ctx, bson.M{})
 	if err != nil {
 		return nil, err
 	}
 	defer cursor.Close(ctx)
 
 	var client []requests.Client
-	for cursor.Next(ctx) {
-		var c requests.Client
-		if err := cursor.Decode(&c); err != nil {
-			return nil, err
-		}
-		client = append(client, c)
+	if err = cursor.All(ctx, &client); err != nil {
+		return nil, err
 	}
 
 	return client, nil
@@ -65,7 +60,7 @@ func (r *AppointmentsRepository) Update(c requests.Client) error {
 		"DateTime":    c.DateTime,
 	}
 
-	_, err := r.colletion.UpdateOne(ctx, filter, update)
+	_, err := r.collection.UpdateOne(ctx, filter, update)
 	return err
 }
 
@@ -73,6 +68,22 @@ func (r *AppointmentsRepository) Delete(Id int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	_, err := r.colletion.DeleteOne(ctx, bson.M{"Id": Id})
+	_, err := r.collection.DeleteOne(ctx, bson.M{"Id": Id})
 	return err
+}
+
+func GetNextId(collection *mongo.Collection, ctx context.Context) (int, error) {
+	filter := bson.M{"_id": "appointmentId"}
+	update := bson.M{"$inc": bson.M{"seq": 1}}
+	opts := options.FindOneAndUpdate().SetReturnDocument(options.After).SetUpsert(true)
+
+	var result struct {
+		Seq int `bson:"seq"`
+	}
+
+	err := collection.FindOneAndUpdate(ctx, filter, update, opts).Decode(&result)
+	if err != nil {
+		return 0, err
+	}
+	return result.Seq, nil
 }

@@ -4,6 +4,7 @@ const (
 	BadRequest                       = "JSON inserido na requisição é inválido"
 	NotFound                         = "Cliente nao encontrado!"
 	IdInvalid                        = "O id Fornecido não foi Localizado"
+	ErrorIdGenerate                  = "Error ao gerar o Id"
 	ErrorAddInDataBase               = "Erro ao Salvar no Banco de dados"
 	ErroQueryDataBase                = "Erro ao consultar o banco"
 	ErrorUpdateInDataBase            = "Erro ao atualizar agendamento"

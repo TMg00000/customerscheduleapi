@@ -16,10 +16,14 @@ func main() {
 		log.Fatal(resourceserrorsmessages.NotFound)
 	}
 
+	db := client.Database("customerscheduleapi")
+
+	counterCollection := db.Collection("counters")
+
 	repo := repository.NewAppointmentsRepository(client)
 
 	r := mux.NewRouter()
-	r.HandleFunc("/appointments", handler.CreateAppointments(repo)).Methods("POST")
+	r.HandleFunc("/appointments", handler.CreateAppointments(repo, counterCollection)).Methods("POST")
 	r.HandleFunc("/appointments", handler.GetAllAppointments(repo)).Methods("GET")
 	r.HandleFunc("/appointments/{id}", handler.UpdateAppointments(repo)).Methods("PUT")
 	r.HandleFunc("/appointments/{id}", handler.DeleteAppointments(repo)).Methods("DELETE")

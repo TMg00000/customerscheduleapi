@@ -7,7 +7,7 @@ import (
 )
 
 type Client struct {
-	Id          int
+	Id          int               `bson:"_id,omitempty"`
 	Name        string            `bson:"name" json:"name"`
 	PhoneNumber int               `bson:"phonenumber" json:"phonenumber"`
 	TypeService enums.TypeService `bson:"typeservice" json:"typeservice"`
