@@ -49,6 +49,7 @@ func GetAllAppointments(repo *repository.AppointmentsRepository) http.HandlerFun
 			http.Error(w, resourceserrorsmessages.ErroQueryDataBase, http.StatusInternalServerError)
 			return
 		}
+		defer r.Body.Close()
 
 		w.Header().Set("Content-type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -95,11 +96,6 @@ func UpdateAppointments(repo *repository.AppointmentsRepository) http.HandlerFun
 
 func DeleteAppointments(repo *repository.AppointmentsRepository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var deleteClient requests.Client
-		if err := json.NewDecoder(r.Body).Decode(&deleteClient); err != nil {
-			http.Error(w, resourceserrorsmessages.NotFound, http.StatusNotFound)
-			return
-		}
 		defer r.Body.Close()
 
 		vars := mux.Vars(r)
@@ -118,6 +114,5 @@ func DeleteAppointments(repo *repository.AppointmentsRepository) http.HandlerFun
 
 		w.Header().Set("Content-type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(deleteClient)
 	}
 }

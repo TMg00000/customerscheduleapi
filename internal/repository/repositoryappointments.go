@@ -2,9 +2,11 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/TMg00000/customerscheduleapi/internal/domain/models/requests"
+	"github.com/TMg00000/customerscheduleapi/internal/domain/models/resources/resourceserrorsmessages"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -52,7 +54,7 @@ func (r *AppointmentsRepository) Update(c requests.Client) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	filter := bson.M{"id": c.Id}
+	filter := bson.M{"_id": c.Id}
 	update := bson.M{
 		"$set": bson.M{
 			"Name":        c.Name,
@@ -66,10 +68,18 @@ func (r *AppointmentsRepository) Update(c requests.Client) error {
 	return err
 }
 
-func (r *AppointmentsRepository) Delete(Id primitive.ObjectID) error {
+func (r *AppointmentsRepository) Delete(id primitive.ObjectID) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	_, err := r.collection.DeleteOne(ctx, bson.M{"Id": Id})
+	res, err := r.collection.DeleteOne(ctx, bson.M{"_id": id})
+	if err != nil {
+		return err
+	}
+
+	if res.DeletedCount == 0 {
+		return fmt.Errorf(resourceserrorsmessages.ErrorDeleteAppointment)
+	}
+
 	return err
 }
