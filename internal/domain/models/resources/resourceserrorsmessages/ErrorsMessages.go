@@ -9,6 +9,7 @@ const (
 	ErroQueryDataBase                = "Erro ao consultar o banco"
 	ErrorUpdateInDataBase            = "Erro ao atualizar agendamento"
 	ErrorDeleteAppointment           = "Erro ao cancelar Agendamento"
+	ErrorNotFoundAppointments        = "Id nao encontrado no banco de dados"
 	NameIsNil                        = "O nome não pode ser nulo ou vazio."
 	TheNameMustContainFiftyChar      = "O nome deve conter no maximo 50 caracteres"
 	TheNameStartedOrFinishWithSpace  = "O nome não pode começar ou terminar com espaços vazios"

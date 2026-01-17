@@ -26,10 +26,10 @@ func (r *AppointmentsRepository) Create(c requests.Client) error {
 	defer cancel()
 
 	_, err := r.collection.InsertOne(ctx, bson.M{
-		"Name":        c.Name,
-		"PhoneNumber": c.PhoneNumber,
-		"TypeService": c.TypeService,
-		"DateTime":    c.DateTime,
+		"name":        c.Name,
+		"phonenumber": c.PhoneNumber,
+		"typeservice": c.TypeService,
+		"datetime":    c.DateTime,
 	})
 	return err
 }
@@ -57,10 +57,10 @@ func (r *AppointmentsRepository) Update(c requests.Client) error {
 	filter := bson.M{"_id": c.Id}
 	update := bson.M{
 		"$set": bson.M{
-			"Name":        c.Name,
-			"PhoneNumber": c.PhoneNumber,
-			"TypeService": c.TypeService,
-			"DateTime":    c.DateTime,
+			"name":        c.Name,
+			"phonenumber": c.PhoneNumber,
+			"typetervice": c.TypeService,
+			"datetime":    c.DateTime,
 		},
 	}
 
