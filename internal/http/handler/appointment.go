@@ -1,16 +1,15 @@
 package handler
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"github.com/TMg00000/customerscheduleapi/internal/domain/models/requests"
 	"github.com/TMg00000/customerscheduleapi/internal/domain/models/resources/resourceserrorsmessages"
 	"github.com/TMg00000/customerscheduleapi/internal/repository"
 	"github.com/TMg00000/customerscheduleapi/internal/validation"
 	"github.com/gorilla/mux"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -31,13 +30,6 @@ func CreateAppointments(repo *repository.AppointmentsRepository, counters *mongo
 
 			return
 		}
-
-		nextId, err := repository.GetNextId(counters, context.Background())
-		if err != nil {
-			http.Error(w, resourceserrorsmessages.ErrorIdGenerate, http.StatusBadRequest)
-			return
-		}
-		client.Id = nextId
 
 		if err := repo.Create(client); err != nil {
 			http.Error(w, resourceserrorsmessages.ErrorAddInDataBase, http.StatusBadRequest)
@@ -68,7 +60,7 @@ func UpdateAppointments(repo *repository.AppointmentsRepository) http.HandlerFun
 	return func(w http.ResponseWriter, r *http.Request) {
 		var updateClient requests.Client
 		if err := json.NewDecoder(r.Body).Decode(&updateClient); err != nil {
-			http.Error(w, resourceserrorsmessages.NotFound, http.StatusNotFound)
+			http.Error(w, resourceserrorsmessages.NotFound, http.StatusBadRequest)
 			return
 		}
 		defer r.Body.Close()
@@ -76,7 +68,7 @@ func UpdateAppointments(repo *repository.AppointmentsRepository) http.HandlerFun
 		vars := mux.Vars(r)
 
 		idStr := vars["id"]
-		id, errparts := strconv.Atoi(idStr)
+		id, errparts := primitive.ObjectIDFromHex(idStr)
 		if errparts != nil {
 			http.Error(w, resourceserrorsmessages.IdInvalid, http.StatusNotFound)
 			return
@@ -86,12 +78,12 @@ func UpdateAppointments(repo *repository.AppointmentsRepository) http.HandlerFun
 		validationErrors := validation.ListErrorsMessages(updateClient)
 		if len(validationErrors) > 0 {
 			msg, _ := json.MarshalIndent(validationErrors, "", "  ")
-			http.Error(w, string(msg), http.StatusNotFound)
+			http.Error(w, string(msg), http.StatusBadRequest)
 			return
 		}
 
 		if err := repo.Update(updateClient); err != nil {
-			http.Error(w, resourceserrorsmessages.ErrorUpdateInDataBase, http.StatusBadRequest)
+			http.Error(w, resourceserrorsmessages.ErrorUpdateInDataBase, http.StatusInternalServerError)
 			return
 		}
 
@@ -113,7 +105,7 @@ func DeleteAppointments(repo *repository.AppointmentsRepository) http.HandlerFun
 		vars := mux.Vars(r)
 
 		idStr := vars["id"]
-		id, errparts := strconv.Atoi(idStr)
+		id, errparts := primitive.ObjectIDFromHex(idStr)
 		if errparts != nil {
 			http.Error(w, resourceserrorsmessages.IdInvalid, http.StatusNotFound)
 			return

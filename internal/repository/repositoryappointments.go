@@ -6,8 +6,8 @@ import (
 
 	"github.com/TMg00000/customerscheduleapi/internal/domain/models/requests"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type AppointmentsRepository struct {
@@ -54,36 +54,22 @@ func (r *AppointmentsRepository) Update(c requests.Client) error {
 
 	filter := bson.M{"id": c.Id}
 	update := bson.M{
-		"Name":        c.Name,
-		"PhoneNumber": c.PhoneNumber,
-		"TypeService": c.TypeService,
-		"DateTime":    c.DateTime,
+		"$set": bson.M{
+			"Name":        c.Name,
+			"PhoneNumber": c.PhoneNumber,
+			"TypeService": c.TypeService,
+			"DateTime":    c.DateTime,
+		},
 	}
 
 	_, err := r.collection.UpdateOne(ctx, filter, update)
 	return err
 }
 
-func (r *AppointmentsRepository) Delete(Id int) error {
+func (r *AppointmentsRepository) Delete(Id primitive.ObjectID) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	_, err := r.collection.DeleteOne(ctx, bson.M{"Id": Id})
 	return err
-}
-
-func GetNextId(collection *mongo.Collection, ctx context.Context) (int, error) {
-	filter := bson.M{"_id": "appointmentId"}
-	update := bson.M{"$inc": bson.M{"seq": 1}}
-	opts := options.FindOneAndUpdate().SetReturnDocument(options.After).SetUpsert(true)
-
-	var result struct {
-		Seq int `bson:"seq"`
-	}
-
-	err := collection.FindOneAndUpdate(ctx, filter, update, opts).Decode(&result)
-	if err != nil {
-		return 0, err
-	}
-	return result.Seq, nil
 }
